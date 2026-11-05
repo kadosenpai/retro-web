@@ -14,7 +14,7 @@ export const gba: SystemProfile = {
   },
 
   video: { width: 240, height: 160, fps: 59.7275, aspectRatio: 240 / 160 },
-  audio: { sampleRate: 32768 },
+  audio: { sampleRate: 65536 },
 
   buttons: [
     { id: 'UP', label: '↑' },
