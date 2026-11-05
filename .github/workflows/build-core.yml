@@ -1,0 +1,34 @@
+name: Build core (mGBA → Wasm)
+
+on:
+  workflow_dispatch:
+    inputs:
+      mgba_ref:
+        description: 'Nhánh, tag hoặc commit của libretro/mgba'
+        required: true
+        default: 'master'
+
+jobs:
+  build-mgba:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: latest
+          actions-cache-folder: emsdk-cache
+
+      - name: Phiên bản Emscripten
+        run: emcc --version
+
+      - name: Build mGBA
+        env:
+          MGBA_REF: ${{ inputs.mgba_ref }}
+        run: bash core-build/build.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mgba-core-build
+          path: core-build/out/
+          if-no-files-found: error
