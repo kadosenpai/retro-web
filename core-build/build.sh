@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Biên dịch libretro-mgba bằng Emscripten (chạy trong GitHub Actions).
+# Biên dịch libretro-mgba bằng Emscripten + CMake (chạy trong GitHub Actions).
 set -euo pipefail
 
 MGBA_REPO="https://github.com/libretro/mgba.git"
@@ -17,16 +17,22 @@ git -C "$WORK/mgba" checkout "$MGBA_REF"
 git -C "$WORK/mgba" submodule update --init --recursive
 COMMIT="$(git -C "$WORK/mgba" rev-parse HEAD)"
 
-echo "==> Biên dịch bằng Emscripten"
-cd "$WORK/mgba"
-emmake make -f Makefile.libretro platform=emscripten -j"$(nproc)"
+echo "==> Cấu hình CMake (Emscripten, libretro tĩnh)"
+emcmake cmake -S "$WORK/mgba" -B "$WORK/build" -G Ninja \
+  -DLIBMGBA_ONLY=ON \
+  -DBUILD_LIBRETRO=ON \
+  -DLIBRETRO_STATIC=ON \
+  -DCMAKE_BUILD_TYPE=Release
+
+echo "==> Biên dịch"
+cmake --build "$WORK/build" --target mgba_libretro -j"$(nproc)"
 
 echo "==> Tìm file kết quả"
 shopt -s nullglob
-artifacts=( ./mgba_libretro*.bc ./mgba_libretro*.a ./mgba_libretro*.wasm ./mgba_libretro*.js ./mgba_libretro*.so )
+artifacts=( "$WORK"/build/mgba_libretro*.bc "$WORK"/build/mgba_libretro*.a )
 if [ ${#artifacts[@]} -eq 0 ]; then
-  echo "Không thấy file mgba_libretro* sau khi build. Nội dung thư mục:"
-  ls -la
+  echo "Không thấy mgba_libretro.bc hoặc .a. Nội dung thư mục build:"
+  ls -la "$WORK/build"
   exit 1
 fi
 cp -v "${artifacts[@]}" "$OUT/"
