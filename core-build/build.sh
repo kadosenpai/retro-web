@@ -36,7 +36,8 @@ if [ ${#artifacts[@]} -eq 0 ]; then
   exit 1
 fi
 cp -v "${artifacts[@]}" "$OUT/"
-CORE_LIB="${artifacts[0]}"
+CORE_LIB="$WORK/libmgba_core.a"
+cp "${artifacts[0]}" "$CORE_LIB"
 
 echo "==> Ghép shim + nhân thành Wasm"
 emcc "$ROOT/frontend/libretro_shim.c" "$CORE_LIB" \
