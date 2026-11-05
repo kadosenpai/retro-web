@@ -36,7 +36,24 @@ if [ ${#artifacts[@]} -eq 0 ]; then
   exit 1
 fi
 cp -v "${artifacts[@]}" "$OUT/"
+CORE_LIB="${artifacts[0]}"
 
+echo "==> Ghép shim + nhân thành Wasm"
+emcc "$ROOT/frontend/libretro_shim.c" "$CORE_LIB" \
+  -I "$WORK/mgba/src/platform/libretro" \
+  -O3 \
+  --no-entry \
+  -sMODULARIZE=1 \
+  -sEXPORT_ES6=1 \
+  -sEXPORT_NAME=createCore \
+  -sENVIRONMENT=web,worker \
+  -sALLOW_MEMORY_GROWTH=1 \
+  -sINITIAL_MEMORY=33554432 \
+  -sSTACK_SIZE=1048576 \
+  -sFORCE_FILESYSTEM=1 \
+  -sEXPORTED_FUNCTIONS=_malloc,_free \
+  -sEXPORTED_RUNTIME_METHODS=HEAPU8,HEAP16,HEAPU32,FS \
+  -o "$OUT/mgba_libretro.js"
 {
   echo "core: libretro/mgba"
   echo "ref: $MGBA_REF"
