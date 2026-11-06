@@ -230,6 +230,12 @@ EXPORT double shim_sample_rate(void) {
 EXPORT size_t shim_sram_size(void) { return retro_get_memory_size(RETRO_MEMORY_SAVE_RAM); }
 EXPORT void* shim_sram_ptr(void) { return retro_get_memory_data(RETRO_MEMORY_SAVE_RAM); }
 
+/* Cheat code. code: GameShark / Action Replay / CodeBreaker; nhiều dòng ngăn bằng '+'. */
+EXPORT void shim_cheat_reset(void) { retro_cheat_reset(); }
+EXPORT void shim_cheat_set(unsigned index, int enabled, const char* code) {
+	retro_cheat_set(index, enabled != 0, code);
+}
+
 /* Save state. */
 EXPORT size_t shim_state_size(void) { return retro_serialize_size(); }
 EXPORT int shim_state_save(void* buf, size_t size) { return retro_serialize(buf, size) ? 1 : 0; }
